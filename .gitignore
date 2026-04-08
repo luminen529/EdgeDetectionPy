@@ -1,0 +1,44 @@
+# Python bytecode / caches
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+env/
+venv/
+.venv/
+ENV/
+env.bak/
+
+# Packaging / distribution
+build/
+dist/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+*.whl
+
+# Testing / coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# Type checkers / caches
+.mypy_cache/
+.pyre/
+
+# Runtime / local config
+.local/
+instance/
+local_settings.py
+.env
+.env.*
+
+# IntelliJ IDEA / JetBrains
+.idea/
+*.iml
+
+# OS files
+.DS_Store
+Thumbs.db
