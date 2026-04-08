@@ -42,3 +42,7 @@ local_settings.py
 # OS files
 .DS_Store
 Thumbs.db
+
+#ouput
+.input_images/
+.output_edge_study/

@@ -3,24 +3,16 @@ import csv
 import cv2
 import numpy as np
 
-
-# =========================
-# 기본 설정
-# =========================
 INPUT_DIR = "input_images"
 OUTPUT_DIR = "output_edge_study"
 
-GAUSSIAN_SIGMAS = [10, 25]          # 가우시안 노이즈 세기
-SP_AMOUNTS = [0.02, 0.08]           # Salt & Pepper 노이즈 비율
-THRESHOLD_RATIO = 0.30              # 에지 임계값 = 최대값 * 비율
+GAUSSIAN_SIGMAS = [10, 25]  # 가우시안 노이즈 세기
+SP_AMOUNTS = [0.02, 0.08]  # Salt & Pepper 노이즈 비율
+THRESHOLD_RATIO = 0.30  # 에지 임계값 = 최대값 * 비율
 
 RANDOM_SEED = 42
 np.random.seed(RANDOM_SEED)
 
-
-# =========================
-# 유틸 함수
-# =========================
 def ensure_dir(path: str):
     os.makedirs(path, exist_ok=True)
 
@@ -35,15 +27,13 @@ def normalize_to_uint8(img: np.ndarray) -> np.ndarray:
     img = img / max_val * 255.0
     return np.clip(img, 0, 255).astype(np.uint8)
 
-
+# 반환값(그래디언트 크기 이미지)을 통해 이지 edge 맵 변환
 def threshold_edge(mag: np.ndarray, ratio: float = THRESHOLD_RATIO) -> np.ndarray:
-    """그래디언트 크기 이미지를 이진 에지 맵으로 변환"""
     mag = np.abs(mag.astype(np.float32))
     thresh = mag.max() * ratio
     edge = np.zeros_like(mag, dtype=np.uint8)
     edge[mag > thresh] = 255
     return edge
-
 
 def put_title(img: np.ndarray, title: str) -> np.ndarray:
     """결과 패널용 제목 추가"""
@@ -179,8 +169,8 @@ def add_salt_pepper_noise(img: np.ndarray, amount: float) -> np.ndarray:
 # =========================
 # 에지 검출 함수
 # =========================
+# 전진 차분
 def forward_diff(img: np.ndarray):
-    """전진 차분"""
     img = img.astype(np.float32)
     gx = np.zeros_like(img, dtype=np.float32)
     gy = np.zeros_like(img, dtype=np.float32)
@@ -189,9 +179,8 @@ def forward_diff(img: np.ndarray):
     mag = np.sqrt(gx ** 2 + gy ** 2)
     return gx, gy, mag
 
-
+# 중심 차분
 def central_diff(img: np.ndarray):
-    """중심 차분"""
     img = img.astype(np.float32)
     gx = np.zeros_like(img, dtype=np.float32)
     gy = np.zeros_like(img, dtype=np.float32)
@@ -200,9 +189,8 @@ def central_diff(img: np.ndarray):
     mag = np.sqrt(gx ** 2 + gy ** 2)
     return gx, gy, mag
 
-
+# Prewitt 필터
 def prewitt(img: np.ndarray):
-    """Prewitt 필터"""
     img = img.astype(np.float32)
     kx = np.array([[-1, 0, 1],
                    [-1, 0, 1],
@@ -216,8 +204,8 @@ def prewitt(img: np.ndarray):
     return gx, gy, mag
 
 
+# Sobel 필터
 def sobel(img: np.ndarray):
-    """Sobel 필터"""
     img = img.astype(np.float32)
     gx = cv2.Sobel(img, cv2.CV_32F, 1, 0, ksize=3)
     gy = cv2.Sobel(img, cv2.CV_32F, 0, 1, ksize=3)
@@ -232,17 +220,13 @@ METHODS = {
     "sobel": sobel,
 }
 
-
-# =========================
-# 메인 실험
-# =========================
+#메인
 def run_experiment():
     ensure_dir(OUTPUT_DIR)
     images = load_or_create_images(INPUT_DIR)
 
     summary_rows = []
 
-    # 결과 저장 폴더
     clean_dir = os.path.join(OUTPUT_DIR, "clean")
     noisy_dir = os.path.join(OUTPUT_DIR, "noisy")
     sheet_dir = os.path.join(OUTPUT_DIR, "contact_sheets")
