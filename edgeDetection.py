@@ -89,7 +89,6 @@ def generate_synthetic_images(output_dir: str):
     cv2.putText(img2, "NOISE", (18, 170), cv2.FONT_HERSHEY_SIMPLEX, 1.2, 50, 2, cv2.LINE_AA)
     cv2.imwrite(os.path.join(output_dir, "synthetic_text.png"), img2)
 
-    # 3) 일반 패턴 이미지
     x = np.linspace(0, 255, 256, dtype=np.float32)
     y = np.linspace(0, 255, 256, dtype=np.float32)
     xv, yv = np.meshgrid(x, y)
@@ -132,14 +131,12 @@ def add_salt_pepper_noise(img: np.ndarray, amount: float) -> np.ndarray:
     num_salt = int(total * amount / 2)
     num_pepper = int(total * amount / 2)
 
-    # salt
     coords = (
         np.random.randint(0, img.shape[0], num_salt),
         np.random.randint(0, img.shape[1], num_salt)
     )
     noisy[coords] = 255
 
-    # pepper
     coords = (
         np.random.randint(0, img.shape[0], num_pepper),
         np.random.randint(0, img.shape[1], num_pepper)
