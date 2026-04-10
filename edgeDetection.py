@@ -18,7 +18,6 @@ def ensure_dir(path: str):
 
 
 def normalize_to_uint8(img: np.ndarray) -> np.ndarray:
-    """음수 가능성이 있는 float 이미지를 0~255 uint8로 정규화"""
     img = img.astype(np.float32)
     img = np.abs(img)
     max_val = img.max()
@@ -27,7 +26,6 @@ def normalize_to_uint8(img: np.ndarray) -> np.ndarray:
     img = img / max_val * 255.0
     return np.clip(img, 0, 255).astype(np.uint8)
 
-# 반환값(그래디언트 크기 이미지)을 통해 이지 edge 맵 변환
 def threshold_edge(mag: np.ndarray, ratio: float = THRESHOLD_RATIO) -> np.ndarray:
     mag = np.abs(mag.astype(np.float32))
     thresh = mag.max() * ratio
@@ -36,7 +34,6 @@ def threshold_edge(mag: np.ndarray, ratio: float = THRESHOLD_RATIO) -> np.ndarra
     return edge
 
 def put_title(img: np.ndarray, title: str) -> np.ndarray:
-    """결과 패널용 제목 추가"""
     if len(img.shape) == 2:
         img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
     canvas = img.copy()
@@ -49,11 +46,9 @@ def put_title(img: np.ndarray, title: str) -> np.ndarray:
 
 
 def make_contact_sheet(images, cols=3, bg_color=255):
-    """이미지 여러 장을 한 장으로 합치기"""
     if not images:
         raise ValueError("images list is empty")
 
-    # 모두 BGR로 맞추기
     converted = []
     max_h = 0
     max_w = 0
@@ -80,22 +75,15 @@ def make_contact_sheet(images, cols=3, bg_color=255):
 
     return cv2.vconcat(rows)
 
-
-# =========================
-# 테스트 이미지 생성
-# =========================
 def generate_synthetic_images(output_dir: str):
-    """입력 이미지가 없을 경우 사용할 합성 이미지 생성"""
     ensure_dir(output_dir)
 
-    # 1) 도형 이미지
     img1 = np.zeros((256, 256), dtype=np.uint8)
     cv2.rectangle(img1, (40, 40), (120, 180), 255, -1)
     cv2.circle(img1, (185, 80), 35, 180, -1)
     cv2.line(img1, (20, 220), (230, 200), 220, 3)
     cv2.imwrite(os.path.join(output_dir, "synthetic_shapes.png"), img1)
 
-    # 2) 문자 이미지
     img2 = np.full((256, 256), 255, dtype=np.uint8)
     cv2.putText(img2, "EDGE", (25, 90), cv2.FONT_HERSHEY_SIMPLEX, 1.5, 0, 3, cv2.LINE_AA)
     cv2.putText(img2, "NOISE", (18, 170), cv2.FONT_HERSHEY_SIMPLEX, 1.2, 50, 2, cv2.LINE_AA)
@@ -113,7 +101,6 @@ def generate_synthetic_images(output_dir: str):
 
 
 def load_or_create_images(input_dir: str):
-    """입력 폴더에 이미지가 없으면 자동 생성"""
     ensure_dir(input_dir)
     exts = (".png", ".jpg", ".jpeg", ".bmp")
     image_files = [f for f in os.listdir(input_dir) if f.lower().endswith(exts)]
@@ -133,10 +120,6 @@ def load_or_create_images(input_dir: str):
         images.append((os.path.splitext(fname)[0], img))
     return images
 
-
-# =========================
-# 노이즈 추가
-# =========================
 def add_gaussian_noise(img: np.ndarray, sigma: float) -> np.ndarray:
     noise = np.random.normal(0, sigma, img.shape).astype(np.float32)
     noisy = img.astype(np.float32) + noise
@@ -165,10 +148,6 @@ def add_salt_pepper_noise(img: np.ndarray, amount: float) -> np.ndarray:
 
     return noisy
 
-
-# =========================
-# 에지 검출 함수
-# =========================
 # 전진 차분
 def forward_diff(img: np.ndarray):
     img = img.astype(np.float32)
@@ -220,7 +199,6 @@ METHODS = {
     "sobel": sobel,
 }
 
-#메인
 def run_experiment():
     ensure_dir(OUTPUT_DIR)
     images = load_or_create_images(INPUT_DIR)
@@ -237,7 +215,6 @@ def run_experiment():
     for image_name, img in images:
         print(f"[INFO] Processing image: {image_name}")
 
-        # clean 기준 결과 먼저 계산
         clean_edges_by_method = {}
         clean_mags_by_method = {}
 
@@ -273,7 +250,6 @@ def run_experiment():
         clean_sheet = make_contact_sheet(base_panels, cols=3)
         cv2.imwrite(os.path.join(sheet_dir, f"{image_name}_clean_sheet.png"), clean_sheet)
 
-        # noisy 조건들
         noisy_conditions = []
 
         for sigma in GAUSSIAN_SIGMAS:
@@ -325,7 +301,6 @@ def run_experiment():
             sheet = make_contact_sheet(panels, cols=3)
             cv2.imwrite(os.path.join(sheet_dir, f"{image_name}_{cond_name}_sheet.png"), sheet)
 
-    # CSV 저장
     csv_path = os.path.join(OUTPUT_DIR, "summary_metrics.csv")
     with open(csv_path, "w", newline="", encoding="utf-8-sig") as f:
         writer = csv.DictWriter(
